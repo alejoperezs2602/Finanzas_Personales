@@ -1,0 +1,139 @@
+/* ============================================================
+   utilities.css — Clases de utilidad: animaciones, badges,
+   estado vacío, skeleton loader y helpers varios.
+   ============================================================ */
+
+/* ---- Animaciones de entrada ---- */
+.fade-in {
+  animation: fadeIn 0.45s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Retrasos escalonados para las tarjetas KPI */
+.stagger-1 { animation-delay: 0.08s; opacity: 0; }
+.stagger-2 { animation-delay: 0.16s; opacity: 0; }
+.stagger-3 { animation-delay: 0.24s; opacity: 0; }
+.stagger-4 { animation-delay: 0.32s; opacity: 0; }
+.stagger-5 { animation-delay: 0.40s; opacity: 0; }
+
+/* ---- Badges de categoría ---- */
+.badge {
+  display:        inline-flex;
+  align-items:    center;
+  gap:            4px;
+  padding:        3px 10px;
+  border-radius:  20px;
+  font-size:      0.72rem;
+  font-weight:    600;
+  letter-spacing: 0.02em;
+  white-space:    nowrap;
+}
+
+.badge-income {
+  background: var(--color-income-bg);
+  color:      var(--color-income);
+}
+
+.badge-expense {
+  background: var(--color-expense-bg);
+  color:      var(--color-expense);
+}
+
+.badge-category {
+  background: var(--glass-surface);
+  color:      var(--glass-text-secondary);
+  border:     1px solid var(--glass-border);
+}
+
+/* ---- Empty State ---- */
+.empty-state {
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  justify-content: center;
+  padding:         40px 20px;
+  text-align:      center;
+  color:           var(--glass-text-secondary);
+  gap:             12px;
+}
+
+.empty-state svg {
+  opacity: 0.35;
+}
+
+.empty-state p {
+  font-size: 0.875rem;
+}
+
+/* ---- Skeleton Loader ---- */
+.skeleton {
+  background-size: 200% 100%;
+  background-image: linear-gradient(
+    90deg,
+    var(--glass-surface) 25%,
+    var(--glass-border)  50%,
+    var(--glass-surface) 75%
+  );
+  animation:     skeleton-pulse 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes skeleton-pulse {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ---- Tooltip (via atributo data-tooltip) ---- */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]:hover::after {
+  content:         attr(data-tooltip);
+  position:        absolute;
+  bottom:          calc(100% + 8px);
+  left:            50%;
+  transform:       translateX(-50%);
+  background:      var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border:          1px solid var(--glass-border);
+  padding:         6px 12px;
+  border-radius:   8px;
+  font-size:       0.75rem;
+  white-space:     nowrap;
+  color:           var(--glass-text);
+  z-index:         60;
+  pointer-events:  none;
+}
+
+/* ---- Divisores ---- */
+.divider {
+  height:     1px;
+  background: var(--glass-border);
+  margin:     16px 0;
+}
+
+/* ---- Texto con elipsis ---- */
+.truncate {
+  overflow:      hidden;
+  text-overflow: ellipsis;
+  white-space:   nowrap;
+}
+
+/* ---- Dot indicator (colores dinámicos) ---- */
+.dot {
+  width:         10px;
+  height:        10px;
+  border-radius: 50%;
+  display:       inline-block;
+  flex-shrink:   0;
+}
+
+/* ---- Body locked (cuando hay modal abierto) ---- */
+body.modal-open {
+  overflow: hidden;
+}

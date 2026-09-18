@@ -1,0 +1,342 @@
+/* ============================================================
+   components.css — Componentes reutilizables de Glassmorphism.
+   
+   Cada clase aquí es un componente visual autocontenido.
+   ESCALABILIDAD: Para agregar un nuevo componente (ej. un
+   sidebar o una notificación expandida), se agrega aquí sin
+   afectar ningún otro archivo.
+   ============================================================ */
+
+/* ---- Glass Base ---- */
+/* Usado para el header y superficies de fondo */
+.glass {
+  background:              var(--glass-bg);
+  backdrop-filter:         blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border:                  1px solid var(--glass-border);
+  transition:              background 0.4s ease, border-color 0.3s ease;
+  box-shadow:              0 4px 30px rgba(0, 0, 0, 0.05);
+}
+
+/* ---- Glass Card ---- */
+/* Tarjetas interactivas con efecto hover neón */
+.glass-card {
+  background:              var(--glass-bg);
+  backdrop-filter:         blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border:                  1px solid var(--glass-border);
+  border-radius:           16px;
+  transition:              all 0.3s ease;
+  box-shadow:              0 4px 30px rgba(0, 0, 0, 0.05);
+}
+
+.glass-card:hover {
+  border-color: var(--glow-color);
+  transform:    translateY(-2px);
+  box-shadow:   0 10px 30px var(--glow-color),
+                inset 0 0 20px rgba(255, 255, 255, 0.05);
+}
+
+/* ---- Glass Input ---- */
+.glass-input {
+  background:              var(--input-bg);
+  backdrop-filter:         blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border:                  1px solid var(--input-border);
+  color:                   var(--glass-text);
+  border-radius:           12px;
+  padding:                 10px 14px;
+  outline:                 none;
+  transition:              all 0.3s ease;
+  width:                   100%;
+  font-size:               0.9rem;
+  font-family:             inherit;
+}
+
+.glass-input:focus {
+  border-color: var(--accent-400);
+  box-shadow:   0 0 0 3px var(--glow-color);
+}
+
+.glass-input::placeholder {
+  color:   var(--glass-text-secondary);
+  opacity: 0.7;
+}
+
+/* Select con flecha personalizada */
+select.glass-input {
+  appearance:           none;
+  background-image:     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+  background-repeat:   no-repeat;
+  background-position: right 12px center;
+  padding-right:       32px;
+  cursor:              pointer;
+}
+
+/* ---- Glass Button (Primario) ---- */
+.glass-btn {
+  background:    linear-gradient(135deg, var(--accent-500), var(--accent-600));
+  color:         white;
+  border:        none;
+  border-radius: 12px;
+  padding:       10px 20px;
+  font-weight:   600;
+  font-family:   inherit;
+  font-size:     0.9rem;
+  cursor:        pointer;
+  transition:    all 0.3s ease;
+  display:       inline-flex;
+  align-items:   center;
+  gap:           8px;
+  text-shadow:   0 1px 2px rgba(0, 0, 0, 0.2);
+  white-space:   nowrap;
+}
+
+.glass-btn:hover {
+  transform:   translateY(-1px);
+  box-shadow:  0 6px 20px var(--glow-strong);
+}
+
+.glass-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* ---- Glass Button (Outline / Secundario) ---- */
+.glass-btn-outline {
+  background:    var(--glass-surface);
+  color:         var(--accent-500);
+  border:        1px solid var(--accent-400);
+  border-radius: 12px;
+  padding:       8px 16px;
+  font-weight:   500;
+  font-family:   inherit;
+  font-size:     0.875rem;
+  cursor:        pointer;
+  transition:    all 0.3s ease;
+  display:       inline-flex;
+  align-items:   center;
+  gap:           6px;
+  white-space:   nowrap;
+}
+
+.glass-btn-outline:hover {
+  background:    var(--glow-color);
+  color:         var(--glass-text);
+  border-color:  transparent;
+}
+
+.glass-btn-outline:disabled {
+  opacity: 0.4;
+  cursor:  not-allowed;
+}
+
+/* ---- Modal ---- */
+.modal-overlay {
+  position:       fixed;
+  inset:          0;
+  background:     var(--modal-overlay);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index:        100;
+  display:        flex;
+  align-items:    center;
+  justify-content: center;
+  padding:        16px;
+  opacity:        0;
+  pointer-events: none;
+  transition:     opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+  opacity:        1;
+  pointer-events: all;
+}
+
+.modal-content {
+  max-width:  500px;
+  width:      100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  transform:  translateY(20px) scale(0.95);
+  transition: transform 0.3s ease;
+}
+
+.modal-overlay.active .modal-content {
+  transform: translateY(0) scale(1);
+}
+
+/* ---- Progress Bar ---- */
+.progress-track {
+  background:    var(--glass-surface);
+  border-radius: 10px;
+  height:        12px;
+  overflow:      hidden;
+  border:        1px solid var(--glass-border);
+}
+
+.progress-fill {
+  height:        100%;
+  border-radius: 10px;
+  background:    linear-gradient(90deg, var(--accent-600), var(--accent-400));
+  transition:    width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  position:      relative;
+  overflow:      hidden;
+}
+
+/* Shimmer effect en la barra de progreso */
+.progress-fill::after {
+  content:    '';
+  position:   absolute;
+  inset:      0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  animation:  shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ---- Dropdown ---- */
+.dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  position:       absolute;
+  top:            calc(100% + 8px);
+  right:          0;
+  min-width:      180px;
+  border-radius:  12px;
+  z-index:        50;
+  opacity:        0;
+  pointer-events: none;
+  transform:      translateY(-8px);
+  transition:     all 0.2s ease;
+  overflow:       hidden;
+}
+
+.dropdown-menu.show {
+  opacity:        1;
+  pointer-events: all;
+  transform:      translateY(0);
+}
+
+.dropdown-item {
+  padding:     12px 16px;
+  cursor:      pointer;
+  transition:  background 0.2s;
+  display:     flex;
+  align-items: center;
+  gap:         10px;
+  font-size:   0.875rem;
+  color:       var(--glass-text);
+}
+
+.dropdown-item:hover {
+  background: var(--glow-color);
+}
+
+/* ---- Toast Notification ---- */
+.toast {
+  position:       fixed;
+  bottom:         24px;
+  right:          24px;
+  z-index:        200;
+  display:        flex;
+  align-items:    center;
+  gap:            12px;
+  min-width:      250px;
+  padding:        14px 20px;
+  opacity:        0;
+  pointer-events: none;
+  transform:      translateY(16px);
+  transition:     all 0.3s ease;
+}
+
+.toast.show {
+  opacity:        1;
+  pointer-events: all;
+  transform:      translateY(0);
+}
+
+/* ---- Transaction Row ---- */
+.transaction-row {
+  display:     grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap:         12px;
+  align-items: center;
+  padding:     14px 16px;
+  transition:  background 0.2s ease;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.transaction-row:hover {
+  background: var(--glass-surface);
+}
+
+.transaction-row:last-child {
+  border-bottom: none;
+}
+
+/* ---- Semantic Color Helpers ---- */
+/* Estos reflejan los valores semánticos que vienen de themes.css */
+.text-income { color: var(--color-income) !important; }
+.text-expense { color: var(--color-expense) !important; }
+.text-savings { color: var(--color-savings) !important; }
+.bg-income { background: var(--color-income-bg) !important; }
+.bg-expense { background: var(--color-expense-bg) !important; }
+.bg-savings { background: var(--color-savings-bg) !important; }
+
+/* ---- Auth Container ---- */
+.auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 32px;
+}
+
+/* ---- KPI value glow ---- */
+.kpi-value {
+  text-shadow: 0 0 20px var(--glow-color);
+}
+
+/* ---- Chart container ---- */
+.chart-container {
+  position:  relative;
+  width:     100%;
+  height:    280px;
+}
+
+/* ---- Goal card ---- */
+.goal-card {
+  background:    var(--glass-surface);
+  border:        1px solid var(--glass-border);
+  border-radius: 14px;
+  padding:       16px;
+  transition:    all 0.3s ease;
+}
+
+.goal-card:hover {
+  border-color: var(--glow-color);
+  box-shadow:   0 4px 15px var(--glow-color);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 640px) {
+  .transaction-row {
+    grid-template-columns: auto 1fr auto;
+    gap:     8px;
+    padding: 12px;
+  }
+
+  .transaction-row .hide-mobile {
+    display: none;
+  }
+}

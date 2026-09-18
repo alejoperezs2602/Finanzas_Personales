@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="man" data-accent="blue">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinanceGlass — Administración de Finanzas Personales</title>
+
+  <!-- ============================================================
+       FUENTES
+       ============================================================ -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- ============================================================
+       CSS — Orden de carga importante:
+       1. themes.css   → Variables CSS disponibles para todo lo demás
+       2. base.css     → Reset, body, aurora
+       3. components.css → Componentes glass reutilizables
+       4. utilities.css  → Animaciones y helpers
+       ============================================================ -->
+  <link rel="stylesheet" href="assets/css/themes.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <link rel="stylesheet" href="assets/css/utilities.css" />
+
+  <!-- ============================================================
+       TAILWIND CSS (CDN) — Para clases de layout y spacing.
+       ESCALABILIDAD: En producción se instalaría via npm con
+       PostCSS y el plugin @tailwindcss/vite para tree-shaking.
+       ============================================================ -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      corePlugins: { preflight: false }, // No sobreescribir nuestro reset CSS
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+
+  <!-- ============================================================
+       LIBRERÍAS EXTERNAS
+       ============================================================ -->
+  <!-- Chart.js: Gráficos interactivos -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <!-- Lucide Icons: Iconografía moderna -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+
+<body>
+
+  <!-- ============================================================
+       FONDO AURORA ANIMADO (decorativo, aria-hidden)
+       ============================================================ -->
+  <div class="aurora-bg" aria-hidden="true">
+    <div class="aurora-orb"></div>
+  </div>
+
+  <!-- ============================================================
+       VISTA 1: AUTENTICACIÓN (LOGIN/REGISTRO)
+       ============================================================ -->
+  <div id="app-auth" class="auth-wrapper relative z-10 fade-in" style="display: none;">
+    <div class="glass-card auth-card">
+      <div class="text-center mb-8">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-[var(--accent-400)] to-[var(--accent-600)] flex items-center justify-center mb-4 shadow-lg shadow-[var(--glow-color)]">
+          <i data-lucide="wallet" class="w-8 h-8 text-white"></i>
+        </div>
+        <h1 class="text-2xl font-bold" style="color: var(--glass-text);">FinanceGlass</h1>
+        <p class="text-sm mt-2" style="color: var(--glass-text-secondary);">Tu dinero, a tu estilo.</p>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex gap-2 mb-6 bg-[var(--glass-surface)] p-1 rounded-xl">
+        <button id="tab-login" onclick="window.__toggleAuthMode('login')" class="glass-btn flex-1 justify-center !py-2 !text-sm !shadow-none">Ingresar</button>
+        <button id="tab-register" onclick="window.__toggleAuthMode('register')" class="glass-btn-outline flex-1 justify-center !py-2 !text-sm !border-transparent">Crear Cuenta</button>
+      </div>
+
+      <!-- Form Login -->
+      <form id="form-login" onsubmit="window.__login(event)" class="space-y-4">
+        <div>
+          <label class="text-xs font-medium mb-1 block" style="color: var(--glass-text-secondary);">Usuario</label>
+          <input type="text" name="username" class="glass-input" required placeholder="ej: carlos" />
+        </div>
+        <div>
+          <label class="text-xs font-medium mb-1 block" style="color: var(--glass-text-secondary);">Contraseña</label>
+          <input type="password" name="password" class="glass-input" required placeholder="••••••••" />
+        </div>
+        <button type="submit" class="glass-btn w-full justify-center mt-2">Iniciar Sesión <i data-lucide="arrow-right" class="w-4 h-4"></i></button>
+      </form>
+
+      <!-- Form Registro -->
+      <form id="form-register" onsubmit="window.__register(event)" class="space-y-4" style="display: none;">
+        <div>
+          <label class="text-xs font-medium mb-1 block" style="color: var(--glass-text-secondary);">Tu Nombre</label>
+          <input type="text" name="name" class="glass-input" required placeholder="Ej: Carlos Silva" />
+        </div>
+        <div>
+          <label class="text-xs font-medium mb-1 block" style="color: var(--glass-text-secondary);">Nombre de Usuario (Login)</label>
+          <input type="text" name="username" class="glass-input" required placeholder="ej: carlos" />
+        </div>
+        <div>
+          <label class="text-xs font-medium mb-1 block" style="color: var(--glass-text-secondary);">Contraseña</label>
+          <input type="password" name="password" class="glass-input" required placeholder="••••••••" />
+        </div>
+        <button type="submit" class="glass-btn w-full justify-center mt-2">Crear Cuenta <i data-lucide="user-plus" class="w-4 h-4"></i></button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       VISTA 2: DASHBOARD PRINCIPAL
+       ============================================================ -->
+  <div id="app-dashboard" class="relative z-10 min-h-screen fade-in" style="display: none;">
+
+    <!-- ========================================================
+         HEADER / NAVBAR
+         ======================================================== -->
+    <header class="glass sticky top-0 z-50 border-b border-[var(--glass-border)]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+
+          <!-- Identidad del usuario -->
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--accent-400)] to-[var(--accent-600)]
+                        flex items-center justify-center text-white font-bold text-lg shadow-lg"
+                 id="avatar-display">U</div>
+            <div class="hidden sm:block">
+              <p class="text-sm" style="color: var(--glass-text-secondary);" id="greeting-text">Buenos días</p>
+              <p class="font-semibold text-base" style="color: var(--glass-text);" id="user-name-display">Usuario</p>
+            </div>
+          </div>
+
+          <!-- Controles -->
+          <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+
+            <!-- Toggle Modo Hombre / Mujer -->
+            <button id="btn-theme-toggle"
+                    onclick="window.__toggleTheme()"
+                    class="glass-btn-outline px-3 font-semibold text-sm hidden sm:inline-flex">
+              👨 Modo Hombre
+            </button>
+
+            <!-- Selector de Acento Dinámico -->
+            <div class="dropdown hidden sm:block">
+              <button onclick="window.__toggleDropdown('accent-dropdown')"
+                      class="glass-btn-outline text-xs sm:text-sm">
+                <i data-lucide="palette" class="w-4 h-4"></i>
+                <span>Acento</span>
+              </button>
+              <div id="accent-dropdown" class="dropdown-menu glass shadow-xl">
+                <!-- Se llena dinámicamente desde ui.js -->
+              </div>
+            </div>
+
+            <!-- Selector de Moneda -->
+            <select id="currency-selector"
+                    class="glass-input !w-auto !py-2 !px-3 text-xs sm:text-sm"
+                    onchange="window.__setCurrency(this.value)">
+              <option value="USD">$ USD</option>
+              <option value="EUR">€ EUR</option>
+              <option value="COP">$ COP</option>
+              <option value="MXN">$ MXN</option>
+            </select>
+
+            <!-- Botón Nuevo Registro -->
+            <button onclick="window.__openModal()" class="glass-btn text-sm">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i>
+              <span class="hidden sm:inline">Registro</span>
+              <span class="sm:hidden">+</span>
+            </button>
+            
+            <!-- Botón Salir -->
+            <button onclick="window.__logout()" class="glass-btn-outline text-sm !px-2" title="Cerrar Sesión">
+              <i data-lucide="log-out" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ========================================================
+         CONTENIDO PRINCIPAL
+         ======================================================== -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+      <!-- ======================================================
+           SECCIÓN 1: KPI CARDS
+           ====================================================== -->
+      <section aria-label="Resumen financiero"
+               class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+        <!-- Balance Total -->
+        <article class="glass-card p-5 fade-in stagger-1">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium" style="color: var(--glass-text-secondary);">Balance Total</span>
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center"
+                 style="background: var(--glow-color);">
+              <i data-lucide="wallet" class="w-5 h-5" style="color: var(--accent-400);"></i>
+            </div>
+          </div>
+          <p class="text-2xl sm:text-3xl font-bold kpi-value" id="kpi-balance">$0</p>
+          <p class="text-xs mt-2" style="color: var(--glass-text-secondary);">
+            <span id="kpi-balance-trend" class="font-medium"></span> mes anterior
+          </p>
+        </article>
+
+        <!-- Ingresos del Mes -->
+        <article class="glass-card p-5 fade-in stagger-2">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium" style="color: var(--glass-text-secondary);">Ingresos (Mes)</span>
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-income">
+              <i data-lucide="trending-up" class="w-5 h-5 text-income"></i>
+            </div>
+          </div>
+          <p class="text-2xl sm:text-3xl font-bold text-income" id="kpi-income">$0</p>
+          <p class="text-xs mt-2" style="color: var(--glass-text-secondary);">
+            <span id="kpi-income-count">0</span> transacciones
+          </p>
+        </article>
+
+        <!-- Gastos del Mes -->
+        <article class="glass-card p-5 fade-in stagger-3">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium" style="color: var(--glass-text-secondary);">Gastos (Mes)</span>
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-expense">
+              <i data-lucide="trending-down" class="w-5 h-5 text-expense"></i>
+            </div>
+          </div>
+          <p class="text-2xl sm:text-3xl font-bold text-expense" id="kpi-expense">$0</p>
+          <p class="text-xs mt-2" style="color: var(--glass-text-secondary);">
+            <span id="kpi-expense-count">0</span> transacciones
+          </p>
+        </article>
+
+        <!-- Tasa de Ahorro -->
+        <article class="glass-card p-5 fade-in stagger-4">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium" style="color: var(--glass-text-secondary);">Tasa de Ahorro</span>
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-savings">
+              <i data-lucide="piggy-bank" class="w-5 h-5 text-savings"></i>
+            </div>
+          </div>
+          <p class="text-2xl sm:text-3xl font-bold text-savings" id="kpi-savings">0%</p>
+          <p class="text-xs mt-2" style="color: var(--glass-text-secondary);">del ingreso mensual</p>
+        </article>
+      </section>
+
+      <!-- ======================================================
+           SECCIÓN 2: GRÁFICOS
+           ====================================================== -->
+      <section aria-label="Gráficos de análisis" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+        <!-- Dona: Gastos por Categoría -->
+        <div class="glass-card p-5 fade-in stagger-2">
+          <h2 class="text-base font-semibold mb-4 flex items-center gap-2"
+              style="color: var(--glass-text);">
+            <i data-lucide="pie-chart" class="w-5 h-5" style="color: var(--accent-400);"></i>
+            Gastos por Categoría
+          </h2>
+          <div class="chart-container">
+            <canvas id="chart-expenses" aria-label="Gráfico de dona de gastos por categoría"></canvas>
+          </div>
+        </div>
+
+        <!-- Barras: Flujo de Caja -->
+        <div class="glass-card p-5 fade-in stagger-3">
+          <h2 class="text-base font-semibold mb-4 flex items-center gap-2"
+              style="color: var(--glass-text);">
+            <i data-lucide="bar-chart-3" class="w-5 h-5" style="color: var(--accent-400);"></i>
+            Flujo de Caja (6 meses)
+          </h2>
+          <div class="chart-container">
+            <canvas id="chart-cashflow" aria-label="Gráfico de barras de ingresos vs gastos"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================
+           SECCIÓN 3: TRANSACCIONES RECIENTES
+           ====================================================== -->
+      <section aria-label="Transacciones recientes" class="glass-card p-5 fade-in stagger-4">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+          <h2 class="text-base font-semibold flex items-center gap-2" style="color: var(--glass-text);">
+            <i data-lucide="list" class="w-5 h-5" style="color: var(--accent-400);"></i>
+            Transacciones Recientes
+          </h2>
+
+          <!-- Filtros -->
+          <div class="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+            <div class="relative flex-1 sm:flex-initial">
+              <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2"
+                 style="color: var(--glass-text-secondary);"></i>
+              <input type="search"
+                     id="search-transactions"
+                     class="glass-input !pl-9 !py-2 text-sm"
+                     placeholder="Buscar..."
+                     oninput="window.__filterTransactions()" />
+            </div>
+            <select id="filter-type"
+                    class="glass-input !w-auto !py-2 text-sm"
+                    onchange="window.__filterTransactions()">
+              <option value="all">Todos</option>
+              <option value="income">Ingresos</option>
+              <option value="expense">Gastos</option>
+            </select>
+            <select id="filter-category"
+                    class="glass-input !w-auto !py-2 text-sm"
+                    onchange="window.__filterTransactions()">
+              <!-- Poblado dinámicamente por transactions.js -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Lista -->
+        <div id="transactions-list" role="list">
+          <!-- Renderizado por transactions.js -->
+        </div>
+
+        <!-- Paginación -->
+        <div class="flex items-center justify-between mt-4 pt-3"
+             style="border-top: 1px solid var(--glass-border);">
+          <p class="text-xs" style="color: var(--glass-text-secondary);" id="transactions-count">0 transacciones</p>
+          <div class="flex gap-2">
+            <button id="btn-prev"
+                    onclick="window.__prevPage()"
+                    class="glass-btn-outline !py-1 !px-3 text-xs">
+              <i data-lucide="chevron-left" class="w-4 h-4"></i> Anterior
+            </button>
+            <button id="btn-next"
+                    onclick="window.__nextPage()"
+                    class="glass-btn-outline !py-1 !px-3 text-xs">
+              Siguiente <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================
+           SECCIÓN 4: OBJETIVOS DE AHORRO
+           ====================================================== -->
+      <section aria-label="Objetivos de ahorro" class="glass-card p-5 fade-in stagger-5">
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="text-base font-semibold flex items-center gap-2" style="color: var(--glass-text);">
+            <i data-lucide="target" class="w-5 h-5" style="color: var(--accent-400);"></i>
+            Objetivos de Ahorro
+          </h2>
+          <button onclick="window.__openGoalModal()" class="glass-btn-outline text-xs">
+            <i data-lucide="plus" class="w-4 h-4"></i> Nueva Meta
+          </button>
+        </div>
+        <div id="goals-list" class="space-y-4">
+          <!-- Renderizado por goals.js -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-6 px-4">
+      <p class="text-xs" style="color: var(--glass-text-secondary);">
+        FinanceGlass © 2026 — Finanzas Personales · Glassmorphism MVP
+      </p>
+    </footer>
+  </div>
+
+  <!-- ============================================================
+       MODAL: NUEVA / EDITAR TRANSACCIÓN
+       ============================================================ -->
+  <div id="transaction-modal"
+       class="modal-overlay"
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="modal-title"
+       onclick="window.__txBackdrop(event)">
+    <div class="modal-content glass-card p-6">
+
+      <div class="flex items-center justify-between mb-5">
+        <h3 id="modal-title" class="text-lg font-semibold" style="color: var(--glass-text);">
+          + Nueva Transacción
+        </h3>
+        <button onclick="window.__closeModal()"
+                class="p-1 rounded-lg"
+                style="color: var(--glass-text-secondary);"
+                aria-label="Cerrar modal">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="transaction-form" onsubmit="window.__submitTransaction(event)" class="space-y-4" novalidate>
+
+        <!-- Tipo -->
+        <fieldset>
+          <legend class="text-sm font-medium mb-2" style="color: var(--glass-text-secondary);">Tipo</legend>
+          <div class="grid grid-cols-2 gap-3">
+            <label class="cursor-pointer">
+              <input type="radio" name="type" value="income" class="sr-only peer" required />
+              <div class="glass-input text-center !py-3 font-medium
+                          peer-checked:bg-income peer-checked:text-income
+                          peer-checked:border-[color:var(--color-income)] transition-all">
+                ↑ Ingreso
+              </div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="type" value="expense" class="sr-only peer" />
+              <div class="glass-input text-center !py-3 font-medium
+                          peer-checked:bg-expense peer-checked:text-expense
+                          peer-checked:border-[color:var(--color-expense)] transition-all">
+                ↓ Gasto
+              </div>
+            </label>
+          </div>
+        </fieldset>
+
+        <!-- Monto -->
+        <div>
+          <label for="amount" class="text-sm font-medium mb-2 block"
+                 style="color: var(--glass-text-secondary);">Monto</label>
+          <input type="number" id="amount" name="amount"
+                 class="glass-input" placeholder="0.00" step="0.01" min="0.01" required />
+        </div>
+
+        <!-- Categoría -->
+        <div>
+          <label for="category" class="text-sm font-medium mb-2 block"
+                 style="color: var(--glass-text-secondary);">Categoría</label>
+          <select id="category" name="category" class="glass-input" required>
+            <option value="">Seleccionar categoría</option>
+            <option value="Alimentación">🍔 Alimentación</option>
+            <option value="Vivienda">🏠 Vivienda</option>
+            <option value="Transporte">🚗 Transporte</option>
+            <option value="Ocio">🎮 Ocio</option>
+            <option value="Salud">💊 Salud</option>
+            <option value="Educación">📚 Educación</option>
+            <option value="Inversión">📈 Inversión</option>
+            <option value="Salario">💰 Salario</option>
+            <option value="Freelance">💻 Freelance</option>
+            <option value="Servicios">📡 Servicios</option>
+            <option value="Ropa">👕 Ropa</option>
+            <option value="Otros">📦 Otros</option>
+          </select>
+        </div>
+
+        <!-- Fecha -->
+        <div>
+          <label for="date" class="text-sm font-medium mb-2 block"
+                 style="color: var(--glass-text-secondary);">Fecha</label>
+          <input type="date" id="date" name="date" class="glass-input" required />
+        </div>
+
+        <!-- Nota -->
+        <div>
+          <label for="note" class="text-sm font-medium mb-2 block"
+                 style="color: var(--glass-text-secondary);">
+            Nota <span style="opacity: 0.5;">(opcional)</span>
+          </label>
+          <input type="text" id="note" name="note"
+                 class="glass-input" placeholder="Descripción breve..." maxlength="120" />
+        </div>
+
+        <!-- Acciones -->
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="window.__closeModal()" class="glass-btn-outline flex-1">
+            Cancelar
+          </button>
+          <button type="submit" class="glass-btn flex-1 justify-center">
+            <i data-lucide="check" class="w-4 h-4"></i> Guardar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL: NUEVO / EDITAR OBJETIVO DE AHORRO
+       ============================================================ -->
+  <div id="goal-modal"
+       class="modal-overlay"
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="goal-modal-title"
+       onclick="window.__goalBackdrop(event)">
+    <div class="modal-content glass-card p-6">
+
+      <div class="flex items-center justify-between mb-5">
+        <h3 id="goal-modal-title" class="text-lg font-semibold" style="color: var(--glass-text);">
+          🎯 Nuevo Objetivo de Ahorro
+        </h3>
+        <button onclick="window.__closeGoalModal()"
+                class="p-1 rounded-lg"
+                style="color: var(--glass-text-secondary);"
+                aria-label="Cerrar modal">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="goal-form" onsubmit="window.__submitGoal(event)" class="space-y-4" novalidate>
+
+        <div>
+          <label for="goal-name" class="text-sm font-medium mb-2 block"
+                 style="color: var(--glass-text-secondary);">Nombre de la Meta</label>
+          <input type="text" id="goal-name" name="goal-name"
+                 class="glass-input" placeholder="Ej: Fondo de Emergencia" required maxlength="60" />
+        </div>
+
+        <div>
+          <label for="goal-target" class="text-sm font-medium mb-2 block"
+                 style="color: var(--glass-text-secondary);">Monto Objetivo</label>
+          <input type="number" id="goal-target" name="goal-target"
+                 class="glass-input" placeholder="0.00" step="0.01" min="1" required />
+        </div>
+
+        <div>
+          <label for="goal-current" class="text-sm font-medium mb-2 block"
+                 style="color: var(--glass-text-secondary);">Monto Ahorrado Actual</label>
+          <input type="number" id="goal-current" name="goal-current"
+                 class="glass-input" placeholder="0.00" step="0.01" min="0" required />
+        </div>
+
+        <div>
+          <label for="goal-icon" class="text-sm font-medium mb-2 block"
+                 style="color: var(--glass-text-secondary);">Icono</label>
+          <select id="goal-icon" name="goal-icon" class="glass-input">
+            <option value="🎯">🎯 Meta General</option>
+            <option value="🏦">🏦 Fondo de Emergencia</option>
+            <option value="✈️">✈️ Viaje</option>
+            <option value="🏠">🏠 Casa</option>
+            <option value="🚗">🚗 Auto</option>
+            <option value="📚">📚 Educación</option>
+            <option value="💻">💻 Tecnología</option>
+            <option value="💍">💍 Evento Especial</option>
+          </select>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="window.__closeGoalModal()" class="glass-btn-outline flex-1">
+            Cancelar
+          </button>
+          <button type="submit" class="glass-btn flex-1 justify-center">
+            <i data-lucide="check" class="w-4 h-4"></i> Guardar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       TOAST NOTIFICATION
+       ============================================================ -->
+  <div id="toast"
+       class="toast glass-card"
+       role="status"
+       aria-live="polite">
+    <i data-lucide="check-circle" id="toast-icon" class="w-5 h-5 flex-shrink-0"></i>
+    <span id="toast-message" class="text-sm font-medium" style="color: var(--glass-text);"></span>
+  </div>
+
+  <!-- ============================================================
+       JAVASCRIPT — Módulos ES6 nativos
+       type="module" habilita import/export y defer automático.
+       El script principal es app.js que importa todos los demás.
+       ============================================================ -->
+  <script type="module" src="assets/js/app.js"></script>
+
+</body>
+</html>

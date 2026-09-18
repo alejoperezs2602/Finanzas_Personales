@@ -1,0 +1,113 @@
+/* ============================================================
+   themes.css — Variables CSS de temas y acentos dinámicos
+   
+   ESCALABILIDAD: Este archivo es la única fuente de verdad
+   para todos los tokens de diseño. Para agregar un nuevo tema
+   o acento, solo se agrega una nueva regla [data-theme] o
+   [data-accent] aquí, sin tocar ningún otro archivo.
+   ============================================================ */
+
+/* ---- Theme: Hombre (Midnight / Executive) ---- */
+[data-theme="man"] {
+  --glass-bg:               rgba(15, 23, 42, 0.7);
+  --glass-border:           rgba(255, 255, 255, 0.08);
+  --glass-text:             #f8fafc;
+  --glass-text-secondary:   #94a3b8;
+  --glass-surface:          rgba(30, 41, 59, 0.6);
+  --body-bg:                #0b1120;
+
+  /* Aurora: Crimson Red & Electric Blue */
+  --aurora-1:               rgba(220, 38, 38, 0.15);
+  --aurora-2:               rgba(37, 99, 235, 0.15);
+  --aurora-3:               rgba(59, 130, 246, 0.08);
+
+  --input-bg:               rgba(15, 23, 42, 0.8);
+  --input-border:           rgba(255, 255, 255, 0.1);
+  --modal-overlay:          rgba(0, 0, 0, 0.7);
+
+  /* Semantic Colors */
+  --color-income:           #3b82f6;
+  --color-income-bg:        rgba(59, 130, 246, 0.15);
+  --color-expense:          #ef4444;
+  --color-expense-bg:       rgba(239, 68, 68, 0.15);
+  --color-savings:          #10b981;
+  --color-savings-bg:       rgba(16, 185, 129, 0.15);
+
+  /* Scrollbar */
+  --scrollbar-track:        rgba(30, 41, 59, 0.3);
+  --scrollbar-thumb:        rgba(100, 116, 139, 0.4);
+}
+
+/* ---- Theme: Mujer (Rose Gold / Blossom) ---- */
+[data-theme="woman"] {
+  --glass-bg:               rgba(255, 255, 255, 0.65);
+  --glass-border:           rgba(255, 255, 255, 0.5);
+  --glass-text:             #334155;
+  --glass-text-secondary:   #64748b;
+  --glass-surface:          rgba(253, 244, 255, 0.7);
+  --body-bg:                #fdf2f8;
+
+  /* Aurora: Soft Pink, Lilac & Peach */
+  --aurora-1:               rgba(244, 114, 182, 0.25);
+  --aurora-2:               rgba(192, 132, 252, 0.20);
+  --aurora-3:               rgba(251, 146, 60, 0.15);
+
+  --input-bg:               rgba(255, 255, 255, 0.7);
+  --input-border:           rgba(219, 164, 214, 0.4);
+  --modal-overlay:          rgba(255, 220, 240, 0.5);
+
+  /* Semantic Colors */
+  --color-income:           #a855f7;
+  --color-income-bg:        rgba(168, 85, 247, 0.15);
+  --color-expense:          #fb923c;
+  --color-expense-bg:       rgba(251, 146, 60, 0.15);
+  --color-savings:          #f472b6;
+  --color-savings-bg:       rgba(244, 114, 182, 0.15);
+
+  /* Scrollbar */
+  --scrollbar-track:        rgba(253, 244, 255, 0.5);
+  --scrollbar-thumb:        rgba(236, 72, 153, 0.25);
+}
+
+/* ============================================================
+   ACENTOS DINÁMICOS
+   ============================================================ */
+
+/* -- Accents: Hombre -- */
+[data-accent="blue"] {
+  --accent-400:   #60a5fa;
+  --accent-500:   #3b82f6;
+  --accent-600:   #2563eb;
+  --glow-color:   rgba(59, 130, 246, 0.35);
+  --glow-strong:  rgba(59, 130, 246, 0.55);
+}
+[data-accent="red"] {
+  --accent-400:   #f87171;
+  --accent-500:   #ef4444;
+  --accent-600:   #dc2626;
+  --glow-color:   rgba(239, 68, 68, 0.35);
+  --glow-strong:  rgba(239, 68, 68, 0.55);
+}
+
+/* -- Accents: Mujer -- */
+[data-accent="pink"] {
+  --accent-400:   #f472b6;
+  --accent-500:   #ec4899;
+  --accent-600:   #db2777;
+  --glow-color:   rgba(236, 72, 153, 0.35);
+  --glow-strong:  rgba(236, 72, 153, 0.55);
+}
+[data-accent="lilac"] {
+  --accent-400:   #c084fc;
+  --accent-500:   #a855f7;
+  --accent-600:   #9333ea;
+  --glow-color:   rgba(168, 85, 247, 0.35);
+  --glow-strong:  rgba(168, 85, 247, 0.55);
+}
+[data-accent="peach"] {
+  --accent-400:   #fb923c;
+  --accent-500:   #f97316;
+  --accent-600:   #ea580c;
+  --glow-color:   rgba(249, 115, 22, 0.35);
+  --glow-strong:  rgba(249, 115, 22, 0.55);
+}

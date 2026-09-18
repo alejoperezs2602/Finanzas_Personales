@@ -1,0 +1,97 @@
+/* ============================================================
+   base.css — Reset, tipografía, body y fondo aurora animado.
+   
+   Este archivo asume que themes.css ya fue cargado y que
+   las variables CSS (--body-bg, --aurora-*) están disponibles.
+   ============================================================ */
+
+/* ---- Reset & Box Model ---- */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ---- Fuentes & Body ---- */
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--body-bg);
+  color: var(--glass-text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background 0.8s ease, color 0.4s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---- Scrollbar personalizado ---- */
+::-webkit-scrollbar        { width: 6px; }
+::-webkit-scrollbar-track  { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb  {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
+
+/* ---- Aurora Animated Background ---- */
+/* ESCALABILIDAD: El efecto aurora es puramente CSS/CSS-vars.
+   Cambiar las variables --aurora-1/2/3 en themes.css es
+   suficiente para personalizar el fondo de cualquier nuevo tema. */
+.aurora-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.aurora-bg::before,
+.aurora-bg::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  transition: background 1s ease;
+}
+
+.aurora-bg::before {
+  width: 600px;
+  height: 600px;
+  background: var(--aurora-1);
+  top: -10%;
+  left: -5%;
+  animation: aurora-float 20s ease-in-out infinite;
+}
+
+.aurora-bg::after {
+  width: 500px;
+  height: 500px;
+  background: var(--aurora-2);
+  bottom: -15%;
+  right: -10%;
+  animation: aurora-float 20s ease-in-out infinite reverse;
+  animation-delay: -7s;
+}
+
+.aurora-orb {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: var(--aurora-3);
+  filter: blur(100px);
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: background 1s ease;
+  animation: aurora-float 25s ease-in-out infinite;
+}
+
+@keyframes aurora-float {
+  0%,
+  100% { transform: translate(0, 0) scale(1); }
+  25%  { transform: translate(30px, -40px) scale(1.05); }
+  50%  { transform: translate(-20px, 20px) scale(0.95); }
+  75%  { transform: translate(15px, 30px) scale(1.02); }
+}
