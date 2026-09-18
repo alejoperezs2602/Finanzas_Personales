@@ -1,40 +1,28 @@
 /**
  * modal.js — Gestión de todos los modales de la aplicación.
- *
- * Centraliza apertura, cierre y lógica de formularios para
- * transacciones y objetivos de ahorro.
- *
- * ESCALABILIDAD: Para agregar un nuevo modal (ej. "Editar perfil"),
- * se agregan las funciones openXModal/closeXModal aquí y se
- * registran en app.js.
+ * (Actualizado para operaciones async con Firestore)
  */
 
-import { AppState }       from './state.js';
-import { saveData }       from './storage.js';
-import { showToast }      from './ui.js';
-import { generateId }     from './utils.js';
+import { AppState }             from './state.js';
+import { saveTransaction, saveGoal } from './storage.js';
+import { showToast }            from './ui.js';
+import { generateId }           from './utils.js';
 import { renderTransactions, populateCategoryFilter } from './transactions.js';
-import { renderGoals }    from './goals.js';
-import { renderKPIs }     from './kpis.js';
-import { renderCharts }   from './charts.js';
+import { renderGoals }          from './goals.js';
+import { renderKPIs }           from './kpis.js';
+import { renderCharts }         from './charts.js';
 
 // ============================================================
 // MODAL: TRANSACCIONES
 // ============================================================
 
-/** @type {string|null} ID de la transacción en edición (null = nueva) */
 let editingTransactionId = null;
 
-/**
- * Abre el modal de transacción para crear o editar.
- * @param {string|null} [id=null]  ID de transacción a editar
- */
 export function openTransactionModal(id = null) {
   editingTransactionId = id;
-
-  const form    = document.getElementById('transaction-form');
-  const title   = document.getElementById('modal-title');
-  const modal   = document.getElementById('transaction-modal');
+  const form  = document.getElementById('transaction-form');
+  const title = document.getElementById('modal-title');
+  const modal = document.getElementById('transaction-modal');
 
   form.reset();
   document.getElementById('date').value = new Date().toISOString().split('T')[0];
@@ -57,23 +45,18 @@ export function openTransactionModal(id = null) {
   openModal(modal);
 }
 
-/** Cierra el modal de transacción. */
 export function closeTransactionModal() {
   closeModal(document.getElementById('transaction-modal'));
 }
 
-/**
- * Maneja el submit del formulario de transacción.
- * @param {SubmitEvent} e
- */
-export function handleTransactionSubmit(e) {
+export async function handleTransactionSubmit(e) {
   e.preventDefault();
 
   const typeEl = document.querySelector('input[name="type"]:checked');
-  if (!typeEl) {
-    showToast('Selecciona Ingreso o Gasto', 'error');
-    return;
-  }
+  if (!typeEl) { showToast('Selecciona Ingreso o Gasto', 'error'); return; }
+
+  const btn = e.target.querySelector('button[type="submit"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
 
   const transaction = {
     id:       editingTransactionId || generateId(),
@@ -84,34 +67,41 @@ export function handleTransactionSubmit(e) {
     note:     document.getElementById('note').value.trim(),
   };
 
-  if (editingTransactionId) {
-    const idx = AppState.transactions.findIndex(t => t.id === editingTransactionId);
-    if (idx !== -1) AppState.transactions[idx] = transaction;
-    showToast('Transacción actualizada', 'success');
-  } else {
-    AppState.transactions.push(transaction);
-    showToast('Transacción registrada', 'success');
-  }
+  try {
+    // Guardar en Firestore
+    await saveTransaction(transaction);
 
-  saveData();
-  closeTransactionModal();
-  refreshDashboard();
+    // Actualizar estado local
+    if (editingTransactionId) {
+      const idx = AppState.transactions.findIndex(t => t.id === editingTransactionId);
+      if (idx !== -1) AppState.transactions[idx] = transaction;
+      showToast('Transacción actualizada ✓', 'success');
+    } else {
+      AppState.transactions.push(transaction);
+      showToast('Transacción registrada ✓', 'success');
+    }
+
+    closeTransactionModal();
+    refreshDashboard();
+  } catch (err) {
+    showToast('Error al guardar. Verifica tu conexión.', 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Guardar';
+      if (window.lucide) lucide.createIcons();
+    }
+  }
 }
 
 // ============================================================
 // MODAL: OBJETIVOS DE AHORRO
 // ============================================================
 
-/** @type {string|null} */
 let editingGoalId = null;
 
-/**
- * Abre el modal de objetivo de ahorro.
- * @param {string|null} [id=null]
- */
 export function openGoalModal(id = null) {
   editingGoalId = id;
-
   const form  = document.getElementById('goal-form');
   const title = document.getElementById('goal-modal-title');
   const modal = document.getElementById('goal-modal');
@@ -134,17 +124,15 @@ export function openGoalModal(id = null) {
   openModal(modal);
 }
 
-/** Cierra el modal de objetivo. */
 export function closeGoalModal() {
   closeModal(document.getElementById('goal-modal'));
 }
 
-/**
- * Maneja el submit del formulario de objetivo.
- * @param {SubmitEvent} e
- */
-export function handleGoalSubmit(e) {
+export async function handleGoalSubmit(e) {
   e.preventDefault();
+
+  const btn = e.target.querySelector('button[type="submit"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
 
   const goal = {
     id:      editingGoalId || generateId(),
@@ -154,18 +142,29 @@ export function handleGoalSubmit(e) {
     icon:    document.getElementById('goal-icon').value,
   };
 
-  if (editingGoalId) {
-    const idx = AppState.goals.findIndex(g => g.id === editingGoalId);
-    if (idx !== -1) AppState.goals[idx] = goal;
-    showToast('Objetivo actualizado', 'success');
-  } else {
-    AppState.goals.push(goal);
-    showToast('Objetivo creado', 'success');
-  }
+  try {
+    await saveGoal(goal);
 
-  saveData();
-  closeGoalModal();
-  renderGoals();
+    if (editingGoalId) {
+      const idx = AppState.goals.findIndex(g => g.id === editingGoalId);
+      if (idx !== -1) AppState.goals[idx] = goal;
+      showToast('Objetivo actualizado ✓', 'success');
+    } else {
+      AppState.goals.push(goal);
+      showToast('Objetivo creado ✓', 'success');
+    }
+
+    closeGoalModal();
+    renderGoals();
+  } catch (err) {
+    showToast('Error al guardar. Verifica tu conexión.', 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Guardar';
+      if (window.lucide) lucide.createIcons();
+    }
+  }
 }
 
 // ============================================================
@@ -184,7 +183,6 @@ function closeModal(modalEl) {
   document.body.classList.remove('modal-open');
 }
 
-/** Re-renderiza todo el dashboard tras una modificación de datos. */
 function refreshDashboard() {
   renderKPIs();
   renderCharts();
@@ -192,7 +190,6 @@ function refreshDashboard() {
   renderTransactions();
 }
 
-// Cerrar modal al hacer clic en el backdrop
 export function handleModalBackdrop(e, closeFn) {
   if (e.target === e.currentTarget) closeFn();
 }

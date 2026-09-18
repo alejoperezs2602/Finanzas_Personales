@@ -1,12 +1,13 @@
 /**
- * app.js — Punto de entrada principal de la aplicación.
+ * app.js — Punto de entrada principal.
+ * (Actualizado para usar Firebase Auth observer como enrutador)
  */
 
-import { checkAuthOnLoad, handleLogin, handleRegister, handleLogout, toggleAuthMode } from './auth.js';
-// (Las demás importaciones se mantienen igual)
+import { initAuthObserver, handleLogin, handleRegister, handleLogout, toggleAuthMode } from './auth.js';
 import { renderTransactions, filterTransactions, nextPage, prevPage, deleteTransaction } from './transactions.js';
-import { deleteGoal } from './goals.js';
-import { openTransactionModal, closeTransactionModal, handleTransactionSubmit, openGoalModal, closeGoalModal, handleGoalSubmit, handleModalBackdrop } from './modal.js';
+import { deleteGoal }   from './goals.js';
+import { openTransactionModal, closeTransactionModal, handleTransactionSubmit,
+         openGoalModal, closeGoalModal, handleGoalSubmit, handleModalBackdrop } from './modal.js';
 import { toggleGenderTheme, setAccent, setCurrency } from './theme.js';
 import { toggleDropdown } from './ui.js';
 
@@ -46,14 +47,17 @@ window.__toggleAuthMode = toggleAuthMode;
 
 document.addEventListener('DOMContentLoaded', () => {
   if (window.lucide) lucide.createIcons();
-  
-  // Enrutamiento Inicial: Verifica sesión. Si existe, carga datos y UI. 
-  // Si no, muestra Auth.
-  checkAuthOnLoad();
 
-  // Fecha por defecto en el formulario
+  // Iniciar el observer de Firebase Auth.
+  // Este listener se encarga de decidir si mostrar Auth o Dashboard
+  // tanto en la carga inicial como tras login/logout.
+  initAuthObserver();
+
+  // Fecha por defecto en el formulario de transacciones
   const dateEl = document.getElementById('date');
   if (dateEl) dateEl.value = new Date().toISOString().split('T')[0];
+
+  console.log('🚀 FinanceGlass v2 iniciado con Firebase');
 });
 
 // Atajos de teclado

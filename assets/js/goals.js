@@ -1,26 +1,18 @@
 /**
  * goals.js — CRUD y renderizado de objetivos de ahorro.
- *
- * ESCALABILIDAD:
- * - GET    /api/savings-goals
- * - POST   /api/savings-goals
- * - PUT    /api/savings-goals/:id
- * - DELETE /api/savings-goals/:id
- *
- * Con notificaciones push al completar una meta (backend + WebPush).
+ * (Actualizado para Firestore async)
  */
 
-import { AppState }          from './state.js';
-import { saveData }          from './storage.js';
-import { showToast }         from './ui.js';
-import { formatCurrency }    from './utils.js';
-import { openGoalModal }     from './modal.js';
+import { AppState }       from './state.js';
+import { removeGoal }     from './storage.js';
+import { showToast }      from './ui.js';
+import { formatCurrency } from './utils.js';
+import { openGoalModal }  from './modal.js';
 
 // ============================================================
 // RENDER
 // ============================================================
 
-/** Renderiza todas las tarjetas de objetivos de ahorro. */
 export function renderGoals() {
   const container = document.getElementById('goals-list');
   if (!container) return;
@@ -39,12 +31,11 @@ export function renderGoals() {
   if (window.lucide) lucide.createIcons();
 }
 
-/** Genera el HTML de una tarjeta de objetivo. */
 function goalCard(goal) {
-  const pct         = Math.min(100, Math.round((goal.current / goal.target) * 100));
-  const remaining   = Math.max(0, goal.target - goal.current);
-  const isComplete  = pct >= 100;
-  const statusText  = isComplete
+  const pct        = Math.min(100, Math.round((goal.current / goal.target) * 100));
+  const remaining  = Math.max(0, goal.target - goal.current);
+  const isComplete = pct >= 100;
+  const statusText = isComplete
     ? '✅ ¡Completado!'
     : `Faltan ${formatCurrency(remaining)}`;
 
@@ -65,18 +56,15 @@ function goalCard(goal) {
             ${pct}%
           </span>
           <button onclick="window.__editGoal('${goal.id}')"
-                  class="p-1 rounded-lg transition-colors"
-                  style="color: var(--glass-text-secondary);"
+                  class="p-1 rounded-lg transition-colors" style="color: var(--glass-text-secondary);"
                   onmouseover="this.style.background='var(--glass-surface)'"
-                  onmouseout="this.style.background='transparent'"
-                  title="Editar">
+                  onmouseout="this.style.background='transparent'" title="Editar">
             <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
           </button>
           <button onclick="window.__deleteGoal('${goal.id}')"
                   class="p-1 rounded-lg transition-colors text-expense"
                   onmouseover="this.style.background='var(--color-expense-bg)'"
-                  onmouseout="this.style.background='transparent'"
-                  title="Eliminar">
+                  onmouseout="this.style.background='transparent'" title="Eliminar">
             <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
           </button>
         </div>
@@ -88,18 +76,18 @@ function goalCard(goal) {
 }
 
 // ============================================================
-// CRUD
+// ELIMINAR (async Firestore)
 // ============================================================
 
-/**
- * Elimina un objetivo por ID.
- * @param {string} id
- */
-export function deleteGoal(id) {
+export async function deleteGoal(id) {
   if (!confirm('¿Eliminar este objetivo de ahorro?')) return;
 
-  AppState.goals = AppState.goals.filter(g => g.id !== id);
-  saveData();
-  renderGoals();
-  showToast('Objetivo eliminado', 'error');
+  try {
+    await removeGoal(id);
+    AppState.goals = AppState.goals.filter(g => g.id !== id);
+    renderGoals();
+    showToast('Objetivo eliminado', 'error');
+  } catch (err) {
+    showToast('Error al eliminar. Verifica tu conexión.', 'error');
+  }
 }

@@ -111,6 +111,18 @@
   </div>
 
   <!-- ============================================================
+       OVERLAY DE CARGA (visible mientras Firebase carga los datos)
+       ============================================================ -->
+  <div id="dashboard-loading" class="auth-wrapper relative z-10" style="display:none;">
+    <div class="text-center space-y-4">
+      <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-[var(--accent-400)] to-[var(--accent-600)] flex items-center justify-center animate-pulse">
+        <i data-lucide="wallet" class="w-7 h-7 text-white"></i>
+      </div>
+      <p class="text-sm font-medium" style="color: var(--glass-text-secondary);">Cargando tus datos...</p>
+    </div>
+  </div>
+
+  <!-- ============================================================
        VISTA 2: DASHBOARD PRINCIPAL
        ============================================================ -->
   <div id="app-dashboard" class="relative z-10 min-h-screen fade-in" style="display: none;">

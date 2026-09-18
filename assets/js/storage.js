@@ -1,160 +1,209 @@
 /**
- * storage.js — Capa de persistencia (Aislamiento por usuario)
+ * storage.js — Capa de persistencia con Firebase Firestore.
+ *
+ * Estructura de datos en Firestore:
+ *
+ *   users/{uid}/
+ *     data/settings        ← Configuración del usuario (tema, moneda, etc.)
+ *     transactions/{txId}  ← Cada transacción como documento individual
+ *     goals/{goalId}       ← Cada objetivo de ahorro como documento individual
+ *
+ * ESCALABILIDAD:
+ * - Para migrar a otra base de datos (ej. Supabase o MongoDB),
+ *   solo se modifica este archivo. El resto de la app no cambia.
+ * - Las consultas del servidor (filtros por fecha, categoría, etc.)
+ *   se implementarían aquí con los métodos `query()` y `where()` de Firestore.
  */
 
-import { AppState } from './state.js';
-import { generateId } from './utils.js';
+import { db }             from './firebase.js';
+import { AppState }       from './state.js';
+import { generateId }     from './utils.js';
 
-// Base keys
-const KEY_USERS = 'fg_users';
-const KEY_SESSION = 'fg_session';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  deleteDoc,
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 // ============================================================
-// MIGRADOR DE DATOS
+// HELPERS DE RUTAS DE FIRESTORE
 // ============================================================
+
+const uid = () => AppState.currentUser?.uid;
+
+const settingsRef  = () => doc(db,  'users', uid(), 'data', 'settings');
+const txRef        = (id) => doc(db, 'users', uid(), 'transactions', id);
+const txCol        = () => collection(db, 'users', uid(), 'transactions');
+const goalRef      = (id) => doc(db, 'users', uid(), 'goals', id);
+const goalsCol     = () => collection(db, 'users', uid(), 'goals');
+
+// ============================================================
+// CARGA DE DATOS
+// ============================================================
+
 /**
- * Si venimos del MVP v1, los datos están guardados sin usuario en:
- * fg_transactions, fg_goals, fg_settings.
- * Los movemos a la cuenta 'admin' y limpiamos el global.
+ * Carga todos los datos del usuario logueado desde Firestore.
+ * Si es la primera vez que inicia sesión, genera mock data (solo para la cuenta admin).
  */
-function runMigration() {
-  const users = JSON.parse(localStorage.getItem(KEY_USERS) || '{}');
-  
-  // Si admin ya existe, la migración ya se hizo.
-  if (users['admin']) return;
-
-  const oldTx = localStorage.getItem('fg_transactions');
-  const oldGoals = localStorage.getItem('fg_goals');
-  const oldSettings = localStorage.getItem('fg_settings');
-
-  if (oldTx || oldGoals || oldSettings) {
-    console.log('[storage] Ejecutando migración de datos v1 a admin...');
-    
-    // Crear admin
-    users['admin'] = { password: '1234', name: 'Admin' };
-    localStorage.setItem(KEY_USERS, JSON.stringify(users));
-
-    // Mover datos a los prefijos de admin
-    if (oldTx) localStorage.setItem('fg_tx_admin', oldTx);
-    if (oldGoals) localStorage.setItem('fg_goals_admin', oldGoals);
-    
-    if (oldSettings) {
-      const s = JSON.parse(oldSettings);
-      s.userName = 'Admin';
-      localStorage.setItem('fg_settings_admin', JSON.stringify(s));
-    }
-
-    // Limpiar claves antiguas
-    localStorage.removeItem('fg_transactions');
-    localStorage.removeItem('fg_goals');
-    localStorage.removeItem('fg_settings');
-  }
-}
-
-// ============================================================
-// GESTIÓN DE SESIÓN
-// ============================================================
-
-export function getSession() {
-  return sessionStorage.getItem(KEY_SESSION);
-}
-
-export function setSession(username) {
-  sessionStorage.setItem(KEY_SESSION, username);
-}
-
-export function clearSession() {
-  sessionStorage.removeItem(KEY_SESSION);
-}
-
-export function getAllUsers() {
-  return JSON.parse(localStorage.getItem(KEY_USERS) || '{}');
-}
-
-export function saveUsers(usersObj) {
-  localStorage.setItem(KEY_USERS, JSON.stringify(usersObj));
-}
-
-// ============================================================
-// CARGA Y GUARDADO AISLADO (POR USUARIO)
-// ============================================================
-
-function getUserKey(base) {
-  const user = AppState.currentUser?.username;
-  if (!user) throw new Error("No hay usuario activo para guardar/cargar datos.");
-  return `fg_${base}_${user}`;
-}
-
-/** Carga los datos del usuario logueado en AppState */
-export function loadData() {
-  runMigration();
-
-  if (!AppState.currentUser) return;
-
-  const kTx       = getUserKey('tx');
-  const kGoals    = getUserKey('goals');
-  const kSettings = getUserKey('settings');
+export async function loadData() {
+  if (!uid()) return;
 
   // Settings
-  const savedSettings = localStorage.getItem(kSettings);
-  if (savedSettings) {
-    try { Object.assign(AppState.settings, JSON.parse(savedSettings)); } catch(e){}
-  } else {
-    // defaults
-    AppState.settings.userName = AppState.currentUser.name || AppState.currentUser.username;
-  }
-
-  // Transactions
-  const savedTx = localStorage.getItem(kTx);
-  if (savedTx) {
-    try { AppState.transactions = JSON.parse(savedTx); } catch(e){}
-  } else {
-    // Si es admin y no tenía (caso raro post-migración), generar mock. Si es nuevo, vacío.
-    if (AppState.currentUser.username === 'admin' && !savedTx) {
-      const mock = generateMockData();
-      AppState.transactions = mock.transactions;
-      AppState.goals = mock.goals;
-      saveData();
-      return;
+  try {
+    const snap = await getDoc(settingsRef());
+    if (snap.exists()) {
+      Object.assign(AppState.settings, snap.data());
     } else {
-      AppState.transactions = [];
+      // Primera carga: usar nombre del usuario
+      AppState.settings.userName = AppState.currentUser.name;
     }
+  } catch (e) {
+    console.warn('[storage] Error cargando settings:', e);
   }
 
-  // Goals
-  const savedGoals = localStorage.getItem(kGoals);
-  if (savedGoals) {
-    try { AppState.goals = JSON.parse(savedGoals); } catch(e){}
-  } else if (AppState.currentUser.username !== 'admin') {
+  // Transacciones
+  try {
+    const snap = await getDocs(txCol());
+    AppState.transactions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (e) {
+    console.warn('[storage] Error cargando transacciones:', e);
+    AppState.transactions = [];
+  }
+
+  // Objetivos de ahorro
+  try {
+    const snap = await getDocs(goalsCol());
+    AppState.goals = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (e) {
+    console.warn('[storage] Error cargando goals:', e);
     AppState.goals = [];
   }
-}
 
-/** Guarda los datos del usuario logueado en localStorage */
-export function saveData() {
-  if (!AppState.currentUser) return;
-
-  localStorage.setItem(getUserKey('tx'),       JSON.stringify(AppState.transactions));
-  localStorage.setItem(getUserKey('goals'),    JSON.stringify(AppState.goals));
-  localStorage.setItem(getUserKey('settings'), JSON.stringify(AppState.settings));
+  // Si es usuario nuevo (sin data), cargar mock para demostración
+  if (AppState.transactions.length === 0 && AppState.currentUser?.isNewUser) {
+    await seedMockData();
+  }
 }
 
 // ============================================================
-// MOCK DATA (Solo para Admin)
+// GUARDADO — SETTINGS
 // ============================================================
-function generateMockData() {
-  // [El mismo código de generateMockData anterior, simplificado]
-  const now = new Date(); const y = now.getFullYear(); const m = now.getMonth();
-  const fmt = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-  
-  return {
-    transactions: [
-      { id: generateId(), type: 'income', amount: 3500, category: 'Salario', date: fmt(y, m, 1), note: 'Salario' },
-      { id: generateId(), type: 'expense', amount: 950, category: 'Vivienda', date: fmt(y, m, 2), note: 'Alquiler' },
-      { id: generateId(), type: 'expense', amount: 320, category: 'Alimentación', date: fmt(y, m, 5), note: 'Supermercado' },
-    ],
-    goals: [
-      { id: generateId(), name: 'Fondo Emergencia', target: 10000, current: 6500, icon: '🏦' }
-    ]
-  };
+
+/** Guarda la configuración del usuario en Firestore. */
+export async function saveSettings() {
+  if (!uid()) return;
+  try {
+    await setDoc(settingsRef(), { ...AppState.settings });
+  } catch (e) {
+    console.error('[storage] Error guardando settings:', e);
+  }
+}
+
+// Alias para compatibilidad con llamadas existentes de theme.js
+export const saveData = saveSettings;
+
+// ============================================================
+// GUARDADO — TRANSACCIONES
+// ============================================================
+
+/**
+ * Crea o actualiza una transacción en Firestore.
+ * @param {Object} tx  Objeto de transacción con su id
+ */
+export async function saveTransaction(tx) {
+  if (!uid()) return;
+  try {
+    const { id, ...data } = tx;
+    await setDoc(txRef(id), data);
+  } catch (e) {
+    console.error('[storage] Error guardando transacción:', e);
+    throw e;
+  }
+}
+
+/**
+ * Elimina una transacción de Firestore por ID.
+ * @param {string} id
+ */
+export async function removeTransaction(id) {
+  if (!uid()) return;
+  try {
+    await deleteDoc(txRef(id));
+  } catch (e) {
+    console.error('[storage] Error eliminando transacción:', e);
+    throw e;
+  }
+}
+
+// ============================================================
+// GUARDADO — OBJETIVOS DE AHORRO
+// ============================================================
+
+/**
+ * Crea o actualiza un objetivo en Firestore.
+ * @param {Object} goal  Objeto de objetivo con su id
+ */
+export async function saveGoal(goal) {
+  if (!uid()) return;
+  try {
+    const { id, ...data } = goal;
+    await setDoc(goalRef(id), data);
+  } catch (e) {
+    console.error('[storage] Error guardando objetivo:', e);
+    throw e;
+  }
+}
+
+/**
+ * Elimina un objetivo de Firestore por ID.
+ * @param {string} id
+ */
+export async function removeGoal(id) {
+  if (!uid()) return;
+  try {
+    await deleteDoc(goalRef(id));
+  } catch (e) {
+    console.error('[storage] Error eliminando objetivo:', e);
+    throw e;
+  }
+}
+
+// ============================================================
+// MOCK DATA (para nuevos usuarios)
+// ============================================================
+
+async function seedMockData() {
+  const now  = new Date();
+  const y    = now.getFullYear();
+  const m    = now.getMonth();
+  const fmt  = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+  const mockTx = [
+    { id: generateId(), type: 'income',  amount: 3500, category: 'Salario',      date: fmt(y, m, 1),  note: 'Salario mensual' },
+    { id: generateId(), type: 'income',  amount: 800,  category: 'Freelance',    date: fmt(y, m, 5),  note: 'Proyecto web' },
+    { id: generateId(), type: 'expense', amount: 950,  category: 'Vivienda',     date: fmt(y, m, 2),  note: 'Alquiler' },
+    { id: generateId(), type: 'expense', amount: 320,  category: 'Alimentación', date: fmt(y, m, 3),  note: 'Supermercado' },
+    { id: generateId(), type: 'expense', amount: 150,  category: 'Transporte',   date: fmt(y, m, 4),  note: 'Gasolina' },
+    { id: generateId(), type: 'expense', amount: 85,   category: 'Ocio',         date: fmt(y, m, 6),  note: 'Cine y cena' },
+    { id: generateId(), type: 'expense', amount: 200,  category: 'Servicios',    date: fmt(y, m, 7),  note: 'Servicios del hogar' },
+  ];
+
+  const mockGoals = [
+    { id: generateId(), name: 'Fondo de Emergencia', target: 10000, current: 6500, icon: '🏦' },
+    { id: generateId(), name: 'Viaje a Europa',      target: 5000,  current: 2200, icon: '✈️' },
+  ];
+
+  // Guardar en Firestore en paralelo
+  await Promise.all([
+    ...mockTx.map(tx => saveTransaction(tx)),
+    ...mockGoals.map(g => saveGoal(g)),
+  ]);
+
+  AppState.transactions = mockTx;
+  AppState.goals        = mockGoals;
+
+  console.log('[storage] Mock data cargado para usuario nuevo.');
 }
