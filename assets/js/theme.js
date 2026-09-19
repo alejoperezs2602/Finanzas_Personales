@@ -47,7 +47,8 @@ export async function toggleGenderTheme() {
 
   // Guardar en Firestore en segundo plano (no bloqueante)
   saveSettings().catch(e => console.warn('[theme] Error guardando tema:', e));
-  showToast(`${THEMES[newTheme].label} activado`, 'info');
+  const toastMsg = newTheme === 'man' ? 'Modo Patrón Activado' : 'Modo Princesa Activado';
+  showToast(toastMsg, 'info');
 }
 
 // ============================================================
