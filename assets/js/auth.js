@@ -95,6 +95,7 @@ export async function handleRegister(e) {
     showToast(`¡Bienvenido, ${name}! 🎉`, 'success');
     // onAuthStateChanged detecta el nuevo usuario y llama a initSession
   } catch (err) {
+    console.error('[auth error]', err); // <--- Log para depuración
     const msg = getAuthErrorMessage(err.code);
     showToast(msg, 'error');
   } finally {

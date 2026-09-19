@@ -51,14 +51,18 @@ const goalsCol     = () => collection(db, 'users', uid(), 'goals');
 export async function loadData() {
   if (!uid()) return;
 
+  let isFirstTime = false;
+
   // Settings
   try {
     const snap = await getDoc(settingsRef());
     if (snap.exists()) {
       Object.assign(AppState.settings, snap.data());
     } else {
-      // Primera carga: usar nombre del usuario
+      // Primera carga: no hay settings guardados, es un usuario nuevo
+      isFirstTime = true;
       AppState.settings.userName = AppState.currentUser.name;
+      await saveSettings(); // Guardar de inmediato para que no vuelva a ser "nuevo"
     }
   } catch (e) {
     console.warn('[storage] Error cargando settings:', e);
@@ -82,8 +86,8 @@ export async function loadData() {
     AppState.goals = [];
   }
 
-  // Si es usuario nuevo (sin data), cargar mock para demostración
-  if (AppState.transactions.length === 0 && AppState.currentUser?.isNewUser) {
+  // Si es usuario completamente nuevo, cargar mock para demostración
+  if (isFirstTime) {
     await seedMockData();
   }
 }

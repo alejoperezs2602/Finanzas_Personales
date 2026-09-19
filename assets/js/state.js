@@ -30,14 +30,16 @@ export const CURRENCIES = {
 
 export const THEMES = {
   man: {
-    label:   '👨 Modo Hombre',
+    label:   'Modo Hombre',
+    icon:    '⚽',
     accents: [
       { id: 'blue', name: 'Azul',  dot: '#3b82f6' },
       { id: 'red',  name: 'Rojo',  dot: '#ef4444' },
     ],
   },
   woman: {
-    label:   '👩 Modo Mujer',
+    label:   'Modo Mujer',
+    icon:    '🌸',
     accents: [
       { id: 'pink',  name: 'Rosa',      dot: '#ec4899' },
       { id: 'lilac', name: 'Lila',      dot: '#a855f7' },

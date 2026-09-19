@@ -151,16 +151,17 @@
             <!-- Toggle Modo Hombre / Mujer -->
             <button id="btn-theme-toggle"
                     onclick="window.__toggleTheme()"
-                    class="glass-btn-outline px-3 font-semibold text-sm hidden sm:inline-flex">
-              👨 Modo Hombre
+                    class="glass-btn-outline px-2.5 text-lg inline-flex justify-center items-center"
+                    title="Cambiar Modo">
+              ⚽
             </button>
 
             <!-- Selector de Acento Dinámico -->
-            <div class="dropdown hidden sm:block">
+            <div class="dropdown block">
               <button onclick="window.__toggleDropdown('accent-dropdown')"
                       class="glass-btn-outline text-xs sm:text-sm">
                 <i data-lucide="palette" class="w-4 h-4"></i>
-                <span>Acento</span>
+                <span class="hidden sm:inline">Acento</span>
               </button>
               <div id="accent-dropdown" class="dropdown-menu glass shadow-xl">
                 <!-- Se llena dinámicamente desde ui.js -->

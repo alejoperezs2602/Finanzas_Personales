@@ -20,7 +20,7 @@ export function applySettings() {
   html.setAttribute('data-accent', accent);
 
   const toggleBtn = document.getElementById('btn-theme-toggle');
-  if (toggleBtn) toggleBtn.innerHTML = THEMES[theme]?.label || '';
+  if (toggleBtn) toggleBtn.innerHTML = THEMES[theme]?.icon || '';
 
   const currencyEl = document.getElementById('currency-selector');
   if (currencyEl) currencyEl.value = currency;
