@@ -10,12 +10,12 @@
        ============================================================ -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <!-- ============================================================
        CSS — Orden de carga importante:
        1. themes.css   → Variables CSS disponibles para todo lo demás
-       2. base.css     → Reset, body, aurora
+       2. base.css     → Reset, body, canvas
        3. components.css → Componentes glass reutilizables
        4. utilities.css  → Animaciones y helpers
        ============================================================ -->
@@ -25,14 +25,12 @@
   <link rel="stylesheet" href="assets/css/utilities.css" />
 
   <!-- ============================================================
-       TAILWIND CSS (CDN) — Para clases de layout y spacing.
-       ESCALABILIDAD: En producción se instalaría via npm con
-       PostCSS y el plugin @tailwindcss/vite para tree-shaking.
+       TAILWIND CSS (CDN)
        ============================================================ -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
-      corePlugins: { preflight: false }, // No sobreescribir nuestro reset CSS
+      corePlugins: { preflight: false },
       theme: {
         extend: {
           fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
@@ -44,20 +42,18 @@
   <!-- ============================================================
        LIBRERÍAS EXTERNAS
        ============================================================ -->
-  <!-- Chart.js: Gráficos interactivos -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-  <!-- Lucide Icons: Iconografía moderna -->
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
 
 <body>
 
   <!-- ============================================================
-       FONDO AURORA ANIMADO (decorativo, aria-hidden)
+       FONDO ANIMADO CANVAS (Constelaciones o Monedas/Pétalos)
        ============================================================ -->
-  <div class="aurora-bg" aria-hidden="true">
-    <div class="aurora-orb"></div>
-  </div>
+  <canvas id="bg-canvas"></canvas>
+  <div class="grain"></div>
 
   <!-- ============================================================
        VISTA 1: AUTENTICACIÓN (LOGIN/REGISTRO)
@@ -156,27 +152,40 @@
               ⚽
             </button>
 
-            <!-- Selector de Acento Dinámico -->
+            <!-- Menú de Ajustes (Acento y Moneda) -->
             <div class="dropdown block">
-              <button onclick="window.__toggleDropdown('accent-dropdown')"
-                      class="glass-btn-outline text-xs sm:text-sm">
-                <i data-lucide="palette" class="w-4 h-4"></i>
-                <span class="hidden sm:inline">Acento</span>
+              <button onclick="window.__toggleDropdown('settings-dropdown')"
+                      class="glass-btn-outline text-xs sm:text-sm !px-2"
+                      title="Ajustes">
+                <i data-lucide="settings" class="w-4 h-4"></i>
               </button>
-              <div id="accent-dropdown" class="dropdown-menu glass shadow-xl">
-                <!-- Se llena dinámicamente desde ui.js -->
+              <div id="settings-dropdown" class="dropdown-menu glass shadow-xl p-2" style="min-width: 200px; right: 0;">
+                
+                <!-- Acentos -->
+                <div class="px-3 py-2">
+                  <p class="text-xs font-semibold tracking-widest uppercase t-muted mb-2">Acento</p>
+                  <div id="accent-dropdown" class="space-y-1">
+                    <!-- Se llena dinámicamente desde ui.js -->
+                  </div>
+                </div>
+                
+                <div class="border-t border-[var(--card-border)] my-1"></div>
+
+                <!-- Moneda -->
+                <div class="px-3 py-2">
+                  <p class="text-xs font-semibold tracking-widest uppercase t-muted mb-2">Moneda</p>
+                  <select id="currency-selector"
+                          class="glass-input !w-full !py-2 !px-3 text-sm"
+                          onchange="window.__setCurrency(this.value)">
+                    <option value="USD">$ USD</option>
+                    <option value="EUR">€ EUR</option>
+                    <option value="COP">$ COP</option>
+                    <option value="MXN">$ MXN</option>
+                  </select>
+                </div>
+
               </div>
             </div>
-
-            <!-- Selector de Moneda -->
-            <select id="currency-selector"
-                    class="glass-input !w-auto !py-2 !px-3 text-xs sm:text-sm"
-                    onchange="window.__setCurrency(this.value)">
-              <option value="USD">$ USD</option>
-              <option value="EUR">€ EUR</option>
-              <option value="COP">$ COP</option>
-              <option value="MXN">$ MXN</option>
-            </select>
 
             <!-- Botón Nuevo Registro -->
             <button onclick="window.__openModal()" class="glass-btn text-sm">
@@ -206,52 +215,58 @@
                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
         <!-- Balance Total -->
-        <article class="glass-card p-5 fade-in stagger-1">
+        <article class="glass p-5 fade-in stagger-1">
+          <span class="bow bow-tl">🎀</span>
+          <span class="sparkle" style="top:15%; right:20%;">✨</span>
           <div class="flex items-center justify-between mb-3">
-            <span class="text-sm font-medium" style="color: var(--glass-text-secondary);">Balance Total</span>
+            <span class="text-sm font-medium tracking-widest uppercase t-muted">Balance Total</span>
             <div class="w-9 h-9 rounded-xl flex items-center justify-center"
-                 style="background: var(--glow-color);">
-              <i data-lucide="wallet" class="w-5 h-5" style="color: var(--accent-400);"></i>
+                 style="background: var(--accent-glow);">
+              <i data-lucide="wallet" class="w-5 h-5 t-accent"></i>
             </div>
           </div>
-          <p class="text-2xl sm:text-3xl font-bold kpi-value" id="kpi-balance">$0</p>
-          <p class="text-xs mt-2" style="color: var(--glass-text-secondary);">
+          <p class="text-2xl sm:text-4xl font-bold kpi-value font-serif" id="kpi-balance">$0</p>
+          <p class="text-xs mt-2 t-muted">
             <span id="kpi-balance-trend" class="font-medium"></span> mes anterior
           </p>
         </article>
 
         <!-- Ingresos del Mes -->
-        <article class="glass-card p-5 fade-in stagger-2">
+        <article class="glass p-5 fade-in stagger-2">
+          <span class="bow bow-tr">🎀</span>
           <div class="flex items-center justify-between mb-3">
-            <span class="text-sm font-medium" style="color: var(--glass-text-secondary);">Ingresos (Mes)</span>
+            <span class="text-sm font-medium tracking-widest uppercase t-muted">Ingresos (Mes)</span>
             <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-income">
               <i data-lucide="trending-up" class="w-5 h-5 text-income"></i>
             </div>
           </div>
-          <p class="text-2xl sm:text-3xl font-bold text-income" id="kpi-income">$0</p>
-          <p class="text-xs mt-2" style="color: var(--glass-text-secondary);">
+          <p class="text-2xl sm:text-3xl font-bold text-income font-serif" id="kpi-income">$0</p>
+          <p class="text-xs mt-2 t-muted">
             <span id="kpi-income-count">0</span> transacciones
           </p>
         </article>
 
         <!-- Gastos del Mes -->
-        <article class="glass-card p-5 fade-in stagger-3">
+        <article class="glass p-5 fade-in stagger-3">
+          <span class="bow bow-bl">🎀</span>
           <div class="flex items-center justify-between mb-3">
-            <span class="text-sm font-medium" style="color: var(--glass-text-secondary);">Gastos (Mes)</span>
+            <span class="text-sm font-medium tracking-widest uppercase t-muted">Gastos (Mes)</span>
             <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-expense">
               <i data-lucide="trending-down" class="w-5 h-5 text-expense"></i>
             </div>
           </div>
-          <p class="text-2xl sm:text-3xl font-bold text-expense" id="kpi-expense">$0</p>
-          <p class="text-xs mt-2" style="color: var(--glass-text-secondary);">
+          <p class="text-2xl sm:text-3xl font-bold text-expense font-serif" id="kpi-expense">$0</p>
+          <p class="text-xs mt-2 t-muted">
             <span id="kpi-expense-count">0</span> transacciones
           </p>
         </article>
 
         <!-- Tasa de Ahorro -->
-        <article class="glass-card p-5 fade-in stagger-4">
+        <article class="glass p-5 fade-in stagger-4">
+          <span class="bow bow-br">🎀</span>
+          <span class="sparkle" style="bottom:20%; right:15%;">✨</span>
           <div class="flex items-center justify-between mb-3">
-            <span class="text-sm font-medium" style="color: var(--glass-text-secondary);">Tasa de Ahorro</span>
+            <span class="text-sm font-medium tracking-widest uppercase t-muted">Tasa de Ahorro</span>
             <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-savings">
               <i data-lucide="piggy-bank" class="w-5 h-5 text-savings"></i>
             </div>

@@ -1,113 +1,87 @@
 /* ============================================================
-   themes.css — Variables CSS de temas y acentos dinámicos
-   
-   ESCALABILIDAD: Este archivo es la única fuente de verdad
-   para todos los tokens de diseño. Para agregar un nuevo tema
-   o acento, solo se agrega una nueva regla [data-theme] o
-   [data-accent] aquí, sin tocar ningún otro archivo.
+   themes.css - Royal Portfolio & Tech Patron
    ============================================================ */
 
-/* ---- Theme: Hombre (Midnight / Executive) ---- */
-[data-theme="man"] {
-  --glass-bg:               rgba(15, 23, 42, 0.7);
-  --glass-border:           rgba(255, 255, 255, 0.08);
-  --glass-text:             #f8fafc;
-  --glass-text-secondary:   #94a3b8;
-  --glass-surface:          rgba(30, 41, 59, 0.6);
-  --body-bg:                #0b1120;
-
-  /* Aurora: Crimson Red & Electric Blue */
-  --aurora-1:               rgba(220, 38, 38, 0.15);
-  --aurora-2:               rgba(37, 99, 235, 0.15);
-  --aurora-3:               rgba(59, 130, 246, 0.08);
-
-  --input-bg:               rgba(15, 23, 42, 0.8);
-  --input-border:           rgba(255, 255, 255, 0.1);
-  --modal-overlay:          rgba(0, 0, 0, 0.7);
-
+/* ===== MODO PATRÓN (oscuro, tecnológico) ===== */
+:root, [data-theme="man"] {
+  --bg-main: #050914;
+  --bg-card: rgba(15, 23, 42, 0.6);
+  --card-border: rgba(56, 189, 248, 0.15);
+  --card-shadow: rgba(0,0,0,0.4);
+  --text-heading: #f1f5f9;
+  --text-body: #94a3b8;
+  --text-muted: #64748b;
+  --accent-primary: #38bdf8;
+  --accent-glow: rgba(56, 189, 248, 0.2);
+  --accent-gold: #38bdf8;
+  --chart-line: rgba(56, 189, 248, 0.6);
+  --chart-fill: rgba(56, 189, 248, 0.08);
+  --bar-color: rgba(56, 189, 248, 0.7);
+  --bow-display: none;
+  --sparkle-display: none;
+  
+  /* Inputs */
+  --input-bg: rgba(15, 23, 42, 0.8);
+  --input-border: rgba(255, 255, 255, 0.1);
+  --modal-overlay: rgba(0, 0, 0, 0.7);
+  
   /* Semantic Colors */
-  --color-income:           #3b82f6;
-  --color-income-bg:        rgba(59, 130, 246, 0.15);
-  --color-expense:          #ef4444;
-  --color-expense-bg:       rgba(239, 68, 68, 0.15);
-  --color-savings:          #10b981;
-  --color-savings-bg:       rgba(16, 185, 129, 0.15);
+  --color-income: #4ade80;
+  --color-expense: #f87171;
+  --color-income-bg: rgba(74, 222, 128, 0.15);
+  --color-expense-bg: rgba(248, 113, 113, 0.15);
+  --color-savings: #38bdf8;
+  --color-savings-bg: rgba(56, 189, 248, 0.15);
 
-  /* Scrollbar */
-  --scrollbar-track:        rgba(30, 41, 59, 0.3);
-  --scrollbar-thumb:        rgba(100, 116, 139, 0.4);
+  /* Legacy aliases for HTML compatibility */
+  --glass-text: var(--text-heading);
+  --glass-text-secondary: var(--text-muted);
+  --glass-surface: rgba(128,128,128,0.08);
+  --accent-400: var(--accent-primary);
+  --accent-500: var(--accent-primary);
+  --accent-600: var(--accent-primary);
+  --glow-color: var(--accent-glow);
+  --glow-strong: var(--accent-glow);
 }
 
-/* ---- Theme: Mujer (Rose Gold / Blossom) ---- */
+/* ===== MODO PRINCESA (rosa pastel, dorado, royal) ===== */
 [data-theme="woman"] {
-  --glass-bg:               rgba(255, 255, 255, 0.65);
-  --glass-border:           rgba(255, 255, 255, 0.5);
-  --glass-text:             #334155;
-  --glass-text-secondary:   #64748b;
-  --glass-surface:          rgba(253, 244, 255, 0.7);
-  --body-bg:                #fdf2f8;
-
-  /* Aurora: Soft Pink, Lilac & Peach */
-  --aurora-1:               rgba(244, 114, 182, 0.25);
-  --aurora-2:               rgba(192, 132, 252, 0.20);
-  --aurora-3:               rgba(251, 146, 60, 0.15);
-
-  --input-bg:               rgba(255, 255, 255, 0.7);
-  --input-border:           rgba(219, 164, 214, 0.4);
-  --modal-overlay:          rgba(255, 220, 240, 0.5);
-
+  --bg-main: linear-gradient(160deg, #fce4ec 0%, #f8c8dc 40%, #fce4ec 100%);
+  --bg-card: rgba(255, 255, 255, 0.65);
+  --card-border: rgba(212, 175, 100, 0.35);
+  --card-shadow: rgba(180, 140, 120, 0.12);
+  --text-heading: #3e2723;
+  --text-body: #5d4037;
+  --text-muted: #8d6e63;
+  --accent-primary: #c9956b;
+  --accent-glow: rgba(212, 175, 100, 0.15);
+  --accent-gold: #c9956b;
+  --chart-line: rgba(201, 149, 107, 0.7);
+  --chart-fill: rgba(201, 149, 107, 0.1);
+  --bar-color: rgba(201, 149, 107, 0.8);
+  --bow-display: block;
+  --sparkle-display: block;
+  
+  /* Inputs */
+  --input-bg: rgba(255, 255, 255, 0.7);
+  --input-border: rgba(212, 175, 100, 0.4);
+  --modal-overlay: rgba(252, 228, 236, 0.7);
+  
   /* Semantic Colors */
-  --color-income:           #a855f7;
-  --color-income-bg:        rgba(168, 85, 247, 0.15);
-  --color-expense:          #fb923c;
-  --color-expense-bg:       rgba(251, 146, 60, 0.15);
-  --color-savings:          #f472b6;
-  --color-savings-bg:       rgba(244, 114, 182, 0.15);
+  --color-income: #10b981;
+  --color-expense: #f43f5e;
+  --color-income-bg: rgba(16, 185, 129, 0.15);
+  --color-expense-bg: rgba(244, 63, 94, 0.15);
+  --color-savings: #c9956b;
+  --color-savings-bg: rgba(212, 175, 100, 0.15);
 
-  /* Scrollbar */
-  --scrollbar-track:        rgba(253, 244, 255, 0.5);
-  --scrollbar-thumb:        rgba(236, 72, 153, 0.25);
-}
-
-/* ============================================================
-   ACENTOS DINÁMICOS
-   ============================================================ */
-
-/* -- Accents: Hombre -- */
-[data-accent="blue"] {
-  --accent-400:   #60a5fa;
-  --accent-500:   #3b82f6;
-  --accent-600:   #2563eb;
-  --glow-color:   rgba(59, 130, 246, 0.35);
-  --glow-strong:  rgba(59, 130, 246, 0.55);
-}
-[data-accent="red"] {
-  --accent-400:   #f87171;
-  --accent-500:   #ef4444;
-  --accent-600:   #dc2626;
-  --glow-color:   rgba(239, 68, 68, 0.35);
-  --glow-strong:  rgba(239, 68, 68, 0.55);
-}
-
-/* -- Accents: Mujer -- */
-[data-accent="pink"] {
-  --accent-400:   #f472b6;
-  --accent-500:   #ec4899;
-  --accent-600:   #db2777;
-  --glow-color:   rgba(236, 72, 153, 0.35);
-  --glow-strong:  rgba(236, 72, 153, 0.55);
-}
-[data-accent="lilac"] {
-  --accent-400:   #c084fc;
-  --accent-500:   #a855f7;
-  --accent-600:   #9333ea;
-  --glow-color:   rgba(168, 85, 247, 0.35);
-  --glow-strong:  rgba(168, 85, 247, 0.55);
-}
-[data-accent="peach"] {
-  --accent-400:   #fb923c;
-  --accent-500:   #f97316;
-  --accent-600:   #ea580c;
-  --glow-color:   rgba(249, 115, 22, 0.35);
-  --glow-strong:  rgba(249, 115, 22, 0.55);
+  /* Legacy aliases for HTML compatibility */
+  --glass-text: var(--text-heading);
+  --glass-text-secondary: var(--text-muted);
+  --glass-surface: rgba(255,255,255,0.4);
+  --accent-400: var(--accent-primary);
+  --accent-500: var(--accent-primary);
+  --accent-600: var(--accent-primary);
+  --glow-color: var(--accent-glow);
+  --glow-strong: var(--accent-glow);
 }

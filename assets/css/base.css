@@ -1,9 +1,8 @@
 /* ============================================================
-   base.css — Reset, tipografía, body y fondo aurora animado.
-   
-   Este archivo asume que themes.css ya fue cargado y que
-   las variables CSS (--body-bg, --aurora-*) están disponibles.
+   base.css - Tipografía, background dinámico y canvas
    ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* ---- Reset & Box Model ---- */
 *,
@@ -14,84 +13,53 @@
   box-sizing: border-box;
 }
 
-/* ---- Fuentes & Body ---- */
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background: var(--body-bg);
-  color: var(--glass-text);
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg-main);
+  color: var(--text-heading);
   min-height: 100vh;
   overflow-x: hidden;
-  transition: background 0.8s ease, color 0.4s ease;
+  transition: background 1s ease, color 1s ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ---- Scrollbar personalizado ---- */
-::-webkit-scrollbar        { width: 6px; }
-::-webkit-scrollbar-track  { background: var(--scrollbar-track); }
-::-webkit-scrollbar-thumb  {
-  background: var(--scrollbar-thumb);
-  border-radius: 3px;
+[data-theme="woman"] body {
+  background: linear-gradient(160deg, #fce4ec 0%, #f8c8dc 40%, #fce4ec 100%);
 }
 
-/* ---- Aurora Animated Background ---- */
-/* ESCALABILIDAD: El efecto aurora es puramente CSS/CSS-vars.
-   Cambiar las variables --aurora-1/2/3 en themes.css es
-   suficiente para personalizar el fondo de cualquier nuevo tema. */
-.aurora-bg {
+/* ---- Scrollbar personalizado ---- */
+::-webkit-scrollbar        { width: 6px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: var(--accent-glow); border-radius: 3px; }
+
+/* ---- Canvas Particles (Replaces Aurora) ---- */
+#bg-canvas {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   z-index: 0;
-  overflow: hidden;
   pointer-events: none;
 }
 
-.aurora-bg::before,
-.aurora-bg::after {
-  content: '';
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(120px);
-  transition: background 1s ease;
+/* ---- Textura Grain ---- */
+.grain {
+  position: fixed; 
+  inset: 0; 
+  pointer-events: none; 
+  z-index: 1;
+  opacity: 0.025; 
+  transition: opacity 1s;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-.aurora-bg::before {
-  width: 600px;
-  height: 600px;
-  background: var(--aurora-1);
-  top: -10%;
-  left: -5%;
-  animation: aurora-float 20s ease-in-out infinite;
+[data-theme="woman"] .grain {
+  opacity: 0.01;
 }
 
-.aurora-bg::after {
-  width: 500px;
-  height: 500px;
-  background: var(--aurora-2);
-  bottom: -15%;
-  right: -10%;
-  animation: aurora-float 20s ease-in-out infinite reverse;
-  animation-delay: -7s;
-}
-
-.aurora-orb {
-  position: absolute;
-  width: 400px;
-  height: 400px;
-  border-radius: 50%;
-  background: var(--aurora-3);
-  filter: blur(100px);
-  top: 40%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  transition: background 1s ease;
-  animation: aurora-float 25s ease-in-out infinite;
-}
-
-@keyframes aurora-float {
-  0%,
-  100% { transform: translate(0, 0) scale(1); }
-  25%  { transform: translate(30px, -40px) scale(1.05); }
-  50%  { transform: translate(-20px, 20px) scale(0.95); }
-  75%  { transform: translate(15px, 30px) scale(1.02); }
+/* Utils Font */
+.font-serif {
+  font-family: 'Playfair Display', serif;
 }

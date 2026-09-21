@@ -71,26 +71,33 @@ function txRow(t) {
   const cls   = isInc ? 'text-income' : 'text-expense';
 
   return `
-    <div class="transaction-row fade-in">
-      <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-           style="background: ${cat.color}22;">${cat.emoji}</div>
-      <div class="min-w-0">
-        <p class="text-sm font-medium truncate" style="color: var(--glass-text);">${t.note || t.category}</p>
-        <p class="text-xs" style="color: var(--glass-text-secondary);">${formatDate(t.date)}</p>
+    <div class="tx-row fade-in">
+      <div class="tx-icon" style="background: ${cat.color}22;">
+        ${cat.emoji}
       </div>
-      <span class="badge badge-category hide-mobile">${cat.emoji} ${t.category}</span>
-      <span class="text-sm font-bold whitespace-nowrap ${cls}">${sign}${formatCurrency(t.amount)}</span>
-      <div class="flex items-center gap-1">
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold truncate t-heading">${t.note || t.category}</p>
+        <p class="text-xs t-muted mt-0.5">${formatDate(t.date)}</p>
+      </div>
+      
+      <!-- Categoría visible solo en escritorio para ahorrar espacio -->
+      <div class="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[var(--glass-surface)] t-muted mr-4">
+        ${cat.emoji} ${t.category}
+      </div>
+
+      <div class="text-right">
+        <p class="text-base font-bold whitespace-nowrap ${cls}">${sign}${formatCurrency(t.amount)}</p>
+      </div>
+
+      <div class="flex items-center gap-1 ml-2">
         <button onclick="window.__editTransaction('${t.id}')"
-                class="p-1.5 rounded-lg transition-colors" style="color: var(--glass-text-secondary);"
-                onmouseover="this.style.background='var(--glass-surface)'"
-                onmouseout="this.style.background='transparent'" title="Editar">
+                class="p-1.5 rounded-lg transition-colors t-muted hover:bg-[var(--glass-surface)] hover:text-[var(--text-heading)]" 
+                title="Editar">
           <i data-lucide="pencil" class="w-4 h-4"></i>
         </button>
         <button onclick="window.__deleteTransaction('${t.id}')"
-                class="p-1.5 rounded-lg transition-colors text-expense"
-                onmouseover="this.style.background='var(--color-expense-bg)'"
-                onmouseout="this.style.background='transparent'" title="Eliminar">
+                class="p-1.5 rounded-lg transition-colors text-expense hover:bg-expense"
+                title="Eliminar">
           <i data-lucide="trash-2" class="w-4 h-4"></i>
         </button>
       </div>

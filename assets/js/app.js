@@ -10,6 +10,7 @@ import { openTransactionModal, closeTransactionModal, handleTransactionSubmit,
          openGoalModal, closeGoalModal, handleGoalSubmit, handleModalBackdrop } from './modal.js';
 import { toggleGenderTheme, setAccent, setCurrency } from './theme.js';
 import { toggleDropdown } from './ui.js';
+import { initParticlesUI } from './particles.js';
 
 // ============================================================
 // PUENTE window.* → Módulos ES6
@@ -47,6 +48,9 @@ window.__toggleAuthMode = toggleAuthMode;
 
 document.addEventListener('DOMContentLoaded', () => {
   if (window.lucide) lucide.createIcons();
+  
+  // Iniciar canvas particles
+  initParticlesUI();
 
   // Iniciar el observer de Firebase Auth.
   // Este listener se encarga de decidir si mostrar Auth o Dashboard

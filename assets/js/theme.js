@@ -25,6 +25,8 @@ export function applySettings() {
   const currencyEl = document.getElementById('currency-selector');
   if (currencyEl) currencyEl.value = currency;
 
+  if (window.switchParticlesMode) window.switchParticlesMode(theme);
+
   updateHeaderGreeting(getGreeting(), userName);
   renderAccentDropdown(THEMES);
 }
